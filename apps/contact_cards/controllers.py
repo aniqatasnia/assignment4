@@ -36,14 +36,68 @@ from .models import get_user_email
 def index():
     return dict(
         get_contacts_url = URL('get_contacts'),
+        add_contact_url=URL('add_contact'),
+        update_contact_url=URL('update_contact'),
+        delete_contact_url=URL('delete_contact'),
+        upload_image_url=URL('upload_image'),
         # Complete. 
     )
 
 @action('get_contacts')
 @action.uses(db, auth.user)
 def get_contacts():
-    contacts = [] # Complete. 
+    contacts = db(db.contact_card.user_email == get_user_email()).select().as_list() # Complete. 
     return dict(contacts=contacts)
 
 # You can add more methods. 
 
+@action('add_contact', method="POST")
+@action.uses(db, auth.user)
+def add_contact():
+    new_contact_id = db.contact_card.insert(
+        contact_name='',
+        contact_affiliation='',
+        contact_description='',
+        contact_image='https://bulma.io/assets/images/placeholders/96x96.png'
+    )
+    new_contact = db.contact_card[new_contact_id]
+    return dict(contact=new_contact.as_dict())
+
+@action('update_contact', method="POST")
+@action.uses(db, auth.user)
+def update_contact():
+    data = request.json
+    contact_id = data.get('id')
+    if not contact_id:
+        abort(400, "Contact ID missing.") # if contact id is not provided error
+    
+    # Update fields based on the provided data
+    db(db.contact_card.id == contact_id).update( # update contact based on that id
+        contact_name=data.get('contact_name', ''), # get the json input
+        contact_affiliation=data.get('contact_affiliation', ''),
+        contact_description=data.get('contact_description', ''),
+    )
+    return dict(success=True)
+
+@action('delete_contact', method="POST")
+@action.uses(db, auth.user)
+def delete_contact():
+    data = request.json
+    contact_id = data.get('id')
+    if not contact_id:
+        abort(400, "Contact ID missing.")
+    
+    db(db.contact_card.id == contact_id).delete()
+    return dict(success=True)
+
+@action('upload_image', method="POST")
+@action.uses(db, auth.user)
+def upload_image():
+    contact_id = request.forms.get('id')
+    file = request.files.get('image')
+    if not contact_id or not file:
+        abort(400, "Missing contact ID or image file.")
+
+    # Update the contact card with the new image
+    db(db.contact_card.id == contact_id).update(contact_image=db.contact_card.contact_image.store(file, file.filename))
+    return dict(success=True, image_url=URL('download', db.contact_card[contact_id].contact_image))

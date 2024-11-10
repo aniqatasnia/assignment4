@@ -10,17 +10,18 @@
 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
 
 <div class="section" id="app" v-cloak>
+  <!---->
   <!-- Put here your Vue.js template -->
-  <div class="container">
+  <!-- <div class="container">
     <h1 class="title">Contacts</h1>
     <div><button class="button is-success" id="add_button">Add Contact</button></div>
     <div class="card contact mt-4">
       <div class="card-content">
         <div class="media">
           <div class="media-left">
-            <figure class="photo image is-96x96">
+            <figure class="photo image is-96x96"> -->
               <!-- Of course, below, the src field has to change in the vue implementation... -->
-              <img class="photo" src="https://bulma.io/assets/images/placeholders/96x96.png"/>
+              <!-- <img class="photo" src="https://bulma.io/assets/images/placeholders/96x96.png"/>
             </figure>
           </div>
           <div class="media-content">
@@ -46,6 +47,61 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
         </div>
       </div>
     </div>
+  </div> -->
+  <!---->
+  <!-- Put here your Vue.js template -->
+  <div class="container">
+    <h1 class="title">Contacts</h1>
+    <div><button class="button is-success" id="add_button" @click="addContact">Add Contact</button></div>
+    <div v-for="contact in contacts" :key="contact.id" class="card contact mt-4">
+      <div class="card-content">
+        <div class="media">
+          <div class="media-left">
+            <figure class="photo image is-96x96" @click="chooseImage(contact)">
+              <!-- Of course, below, the src field has to change in the vue implementation... -->
+              <img class="photo" src="https://bulma.io/assets/images/placeholders/96x96.png"/>
+            </figure>
+          </div>
+          <div class="media-content">
+            <p class="title person-name">
+              <input type="text" class="input is-4 title" 
+                    name="name"
+                    placeholder="Name"
+                    v-model="contact.contact_name"
+                    :value="contact.contact_name"
+                    :readonly="!isEditing[contact.id]?.name"
+                    @click="enableEdit(contact, 'name')"
+                    @blur="saveEdit(contact, 'contact_name')"
+              />
+            </p>
+            <p class="subtitle person-affiliation">
+              <input type="text" class="input is-6" 
+                    placeholder="Affiliation"
+                    name="affiliation"
+                    v-model="contact.contact_affiliation"
+                    :value="contact.contact_affiliation"
+                    :readonly="!isEditing[contact.id]?.affiliation"
+                    @click="enableEdit(contact, 'affiliation')"
+                    @blur="saveEdit(contact, 'contact_affiliation')"
+              />
+            </p>
+          </div>
+          <div class="media-right">
+            <i class="delete-button has-text-danger fa fa-trash trash" @click="deleteContact(contact.id)"></i>
+          </div>
+        </div>
+          <textarea class="textarea"
+                    name="description"
+                    placeholder="Description"
+                    v-model="contact.contact_description"
+                    :value="contact.contact_description"
+                    :readonly="!isEditing[contact.id]?.description"
+                  @click="enableEdit(contact, 'description')"
+                  @blur="saveEdit(contact, 'contact_description')"
+            ></textarea> 
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -54,7 +110,11 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
 <!-- Loads the index-specific js for Vue -->
 <script>
   let get_contacts_url = "[[=XML(get_contacts_url)]]";
-  // Add more URLs if you wish. 
+  // Add more URLs if you wish.
+  let add_contact_url = "[[=XML(add_contact_url)]]";
+  let update_contact_url = "[[=XML(update_contact_url)]]";
+  let delete_contact_url = "[[=XML(delete_contact_url)]]";
+  let upload_image_url = "[[=XML(upload_image_url)]]";
 </script>
 
 <script src="js/index.js"></script>
