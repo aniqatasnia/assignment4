@@ -70,14 +70,25 @@ def update_contact():
     contact_id = data.get('id')
     if not contact_id:
         abort(400, "Contact ID missing.") # if contact id is not provided error
-    
+
+    # Log the incoming data for verification
+    print("Updating contact ID:", contact_id, "with data:", data)
+
     # Update fields based on the provided data
-    db(db.contact_card.id == contact_id).update( # update contact based on that id
-        contact_name=data.get('contact_name', ''), # get the json input
-        contact_affiliation=data.get('contact_affiliation', ''),
-        contact_description=data.get('contact_description', ''),
+    updated_rows = db(db.contact_card.id == contact_id).update(
+        contact_name=data.get('contact_name', 'field not found in data'),
+        contact_affiliation=data.get('contact_affiliation', 'field not found in data'),
+        contact_description=data.get('contact_description', 'field not found in data'),
     )
-    return dict(success=True)
+    
+    # Check if the row was actually updated
+    if updated_rows:
+        print("Contact updated successfully.")
+    else:
+        print("No contact found with the given ID.")
+    updated_contact = db(db.contact_card.id == contact_id).select().first()
+    return dict(success=bool(updated_rows), updated_contact=updated_contact.as_dict())
+    # return dict(success=bool(updated_rows))
 
 @action('delete_contact', method="POST")
 @action.uses(db, auth.user)
@@ -98,6 +109,20 @@ def upload_image():
     if not contact_id or not file:
         abort(400, "Missing contact ID or image file.")
 
-    # Update the contact card with the new image
-    db(db.contact_card.id == contact_id).update(contact_image=db.contact_card.contact_image.store(file, file.filename))
-    return dict(success=True, image_url=URL('download', db.contact_card[contact_id].contact_image))
+    # Save the image and store the path in the contact record
+    image_path = db.contact_card.contact_image.store(file, file.filename)
+    db(db.contact_card.id == contact_id).update(contact_image=image_path)
+
+    # Return the URL for the uploaded image
+    return dict(success=True, image_url=URL('download', image_path))
+#     contact_id = request.forms.get('id')
+#     file = request.files.get('image')
+#     if not contact_id or not file:
+#         abort(400, "Missing contact ID or image file.")
+
+#    # Update the contact with the new image file
+#     image_path = db.contact_card.contact_image.store(file, file.filename)
+#     db(db.contact_card.id == contact_id).update(contact_image=image_path)
+    
+#     # Return the URL for the uploaded image
+#     return dict(success=True, image_url=URL('download', image_path))

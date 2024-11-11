@@ -43,7 +43,10 @@ app.methods = {
     loadContacts() {
         // Complete.
         axios.get(get_contacts_url).then(response => {
-            this.contacts = response.data.contacts;
+            console.log("Loaded contacts:", response.data.contacts); // Log to verify data
+            this.contacts = response.data.contacts; // Populate contacts with data from the server
+        }).catch(error => {
+            console.error("Failed to load contacts:", error);
         });
     },
     addContact() {
@@ -59,16 +62,45 @@ app.methods = {
         });
     },
     enableEdit(contact, field) {
-        this.$set(this.isEditing, contact.id, { ...this.isEditing[contact.id], [field]: true });
+        if (!this.isEditing[contact.id]) {
+            this.isEditing[contact.id] = {};
+        }
+        this.isEditing[contact.id][field] = true; // Set the specific field to editable
     },
     saveEdit(contact, field) {
-        this.$set(this.isEditing, contact.id, { ...this.isEditing[contact.id], [field]: false });
-        axios.post(update_contact_url, {
+        this.isEditing[contact.id][field] = false;
+        // Prepare data to send based on the field being edited
+        const data = {
             id: contact.id,
-            [field]: contact[field],
+            contact_name: contact.contact_name,
+            contact_affiliation: contact.contact_affiliation,
+            contact_description: contact.contact_description,
+        };
+        // data[field] = contact[field];
+
+        axios.post(update_contact_url, data).then(() => {
+            console.log(`Saved ${field} for contact ID: ${contact.id}`);
+        }).catch(error => {
+            console.error("Error saving edit:", error);
         });
     },
     chooseImage(contact) {
+        // let input = document.getElementById("file-input");
+        // input.onchange = () => {
+        //     let file = input.files[0];
+        //     if (file) {
+        //         let formData = new FormData();
+        //         formData.append("id", contact.id);
+        //         formData.append("image", file);
+
+        //         axios.post(upload_image_url, formData, {
+        //             headers: { "Content-Type": "multipart/form-data" }
+        //         }).then(response => {
+        //             contact.contact_image = response.data.image_url;
+        //         });
+        //     }
+        // };
+        // input.click();
         let input = document.getElementById("file-input");
         input.onchange = () => {
             let file = input.files[0];
@@ -80,7 +112,11 @@ app.methods = {
                 axios.post(upload_image_url, formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 }).then(response => {
+                    // Update the contact's image in the contacts array
                     contact.contact_image = response.data.image_url;
+                    console.log("Image uploaded:", response.data.image_url);
+                }).catch(error => {
+                    console.error("Error uploading image:", error);
                 });
             }
         };
@@ -91,7 +127,7 @@ app.methods = {
 app.vue = Vue.createApp({data: app.data, methods: app.methods, mounted(){this.loadContacts();}}).mount("#app");
 
 // Load init contact data
-app.methods.loadContacts();
+// app.methods.loadContacts();
 // app.load_data = function () {
 //     // Complete.
 //     axios.get(get_contacts_url).then(response => {

@@ -59,7 +59,7 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
           <div class="media-left">
             <figure class="photo image is-96x96" @click="chooseImage(contact)">
               <!-- Of course, below, the src field has to change in the vue implementation... -->
-              <img class="photo" src="https://bulma.io/assets/images/placeholders/96x96.png"/>
+              <img class="photo" :src="contact.contact_image || 'https://bulma.io/assets/images/placeholders/96x96.png'" alt="Contact photo"/>
             </figure>
           </div>
           <div class="media-content">
@@ -71,7 +71,7 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                     :value="contact.contact_name"
                     :readonly="!isEditing[contact.id]?.name"
                     @click="enableEdit(contact, 'name')"
-                    @blur="saveEdit(contact, 'contact_name')"
+                    @blur="saveEdit(contact, 'name')"
               />
             </p>
             <p class="subtitle person-affiliation">
@@ -82,7 +82,7 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                     :value="contact.contact_affiliation"
                     :readonly="!isEditing[contact.id]?.affiliation"
                     @click="enableEdit(contact, 'affiliation')"
-                    @blur="saveEdit(contact, 'contact_affiliation')"
+                    @blur="saveEdit(contact, 'affiliation')"
               />
             </p>
           </div>
@@ -97,7 +97,7 @@ accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                     :value="contact.contact_description"
                     :readonly="!isEditing[contact.id]?.description"
                   @click="enableEdit(contact, 'description')"
-                  @blur="saveEdit(contact, 'contact_description')"
+                  @blur="saveEdit(contact, 'description')"
             ></textarea> 
         </div>
       </div>
